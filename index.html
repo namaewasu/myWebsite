@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Desktop Popup Windows (Vanilla)</title>
+  <style>
+    :root{
+      --bg: #e0f2f7;
+      --panel: rgba(255,255,255,.9);
+      --win: #fff;
+      --bar: #444444;
+      --shadow: 0 20px 60px rgba(0,0,0,.15);
+      --radius: 12px;
+      --border: rgba(0,0,0,.10);
+      --accent: #f7931e;
+      --taskbar-h: 56px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      overflow:auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* Hero Card */
+    .hero-card{
+      width: min(800px, 90vw);
+      max-width: 800px;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .hero-header{
+      height: 44px;
+      background: var(--bar);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      font-weight: 500;
+      font-size: 14px;
+      text-transform: lowercase;
+    }
+
+    .hero-content{
+      padding: 60px 40px;
+      text-align: center;
+    }
+
+    .hero-title{
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 600;
+      margin: 0 0 12px;
+      color: #333;
+      line-height: 1.2;
+    }
+
+    .hero-title .accent{
+      color: var(--accent);
+    }
+
+    .hero-tagline{
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: #555;
+      margin: 0 0 60px;
+      font-weight: 400;
+    }
+
+    .hero-nav{
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .hero-nav-item{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      color: #555;
+      transition: transform 0.2s, color 0.2s;
+    }
+
+    .hero-nav-item:hover{
+      transform: translateY(-2px);
+      color: #333;
+    }
+
+    .hero-nav-icon{
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      background: transparent;
+    }
+
+    .hero-nav-label{
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: lowercase;
+    }
+
+    @media (max-width: 600px){
+      .hero-content{ padding: 40px 24px; }
+      .hero-nav{ gap: 24px; }
+      .hero-nav-icon{ width: 40px; height: 40px; font-size: 20px; }
+    }
+
+    /* Windows */
+    .window{
+      position:fixed;
+      width: min(760px, 92vw);
+      height: min(480px, 70vh);
+      background: var(--win);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow:hidden;
+      display:none;
+      /* JS sets: left, top, z-index */
+    }
+    .window[data-open="true"]{ display:block; }
+    .window[data-min="true"]{ display:none; }
+
+    .titlebar{
+      height: 44px;
+      background: var(--bar);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 0 10px 0 14px;
+      user-select:none;
+      cursor: grab;
+    }
+    .window.dragging .titlebar{ cursor: grabbing; }
+
+    .title{
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: .2px;
+      text-transform: lowercase;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 2px rgba(255,255,255,.12);
+    }
+
+    .controls{
+      display:flex;
+      gap:8px;
+    }
+    .ctrl{
+      width: 34px; height: 30px;
+      border:0;
+      border-radius: 8px;
+      background: rgba(255,255,255,.12);
+      color:#fff;
+      cursor:pointer;
+    }
+    .ctrl:hover{ background: rgba(255,255,255,.22); }
+
+    .content{
+      height: calc(100% - 44px);
+      overflow:auto;
+      padding: 18px;
+      line-height: 1.65;
+    }
+
+    /* Maximize state */
+    .window[data-max="true"]{
+      left: 12px !important;
+      top: 12px !important;
+      width: calc(100vw - 24px) !important;
+      height: calc(100vh - 24px - var(--taskbar-h)) !important;
+      border-radius: 16px;
+    }
+
+
+    /* Small helper text styles */
+    h2{ margin:0 0 8px; }
+    .pill{
+      display:inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,138,0,.12);
+      border: 1px solid rgba(255,138,0,.25);
+      color: #7a3d00;
+      font-weight: 650;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .card{
+      border:1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    /* About section styles */
+    .about-titlebar {
+      justify-content: space-between;
+    }
+
+    .about-titlebar .title {
+      font-weight: 500;
+      text-transform: lowercase;
+    }
+
+    .about-close {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .about-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .about-content {
+      padding: 40px;
+      background: #fff;
+    }
+
+    .about-profile-section {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 32px;
+      align-items: flex-start;
+    }
+
+    .about-profile-image-wrapper {
+      flex-shrink: 0;
+    }
+
+    .about-profile-image {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e0e0e0;
+      display: block;
+    }
+
+    .about-profile-info {
+      flex: 1;
+    }
+
+    .about-name {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 0 0 8px;
+      line-height: 1.2;
+    }
+
+    .about-titles {
+      font-size: 1rem;
+      color: #333;
+      margin: 0 0 8px;
+      font-weight: 400;
+    }
+
+    .about-previous {
+      font-size: 0.95rem;
+      color: #333;
+      margin: 0;
+    }
+
+    .about-link {
+      color: var(--accent);
+      text-decoration: underline;
+      transition: opacity 0.2s;
+    }
+
+    .about-link:hover {
+      opacity: 0.8;
+    }
+
+    .about-text-section {
+      margin-top: 24px;
+    }
+
+    .about-intro {
+      font-size: 1rem;
+      color: #333;
+      line-height: 1.6;
+      margin: 0 0 20px;
+    }
+
+    .about-skills {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      line-height: 1.8;
+    }
+
+    .about-skills li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+      color: #333;
+      font-size: 1rem;
+    }
+
+    .about-skills li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #333;
+    }
+
+    /* Links section styles */
+    #win-links {
+      width: min(600px, 95vw);
+      height: min(350px, 80vh);
+    }
+
+    .links-titlebar {
+      justify-content: space-between;
+    }
+
+    .links-titlebar .title {
+      font-weight: 500;
+      text-transform: lowercase;
+    }
+
+    .links-close {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .links-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .links-content {
+      padding: 50px 60px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: calc(100% - 44px);
+      overflow-y: auto;
+    }
+
+    .links-description {
+      text-align: center;
+      font-size: 1rem;
+      color: #333;
+      margin: 0 0 40px;
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      width: 100%;
+      max-width: 700px;
+      margin-bottom: 40px;
+    }
+
+    .links-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #333;
+      transition: transform 0.2s;
+    }
+
+    .links-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .links-icon-wrapper {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.2s;
+    }
+
+    .links-item:hover .links-icon-wrapper {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .links-icon {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+
+    .links-label {
+      font-size: 1rem;
+      text-transform: lowercase;
+      font-weight: 400;
+      color: #333;
+    }
+
+    .links-notice {
+      background: transparent;
+      border: 1px solid #e0e0e0;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    /* Contact section styles */
+    .contact-titlebar {
+      justify-content: space-between;
+    }
+
+    .contact-titlebar .title {
+      font-weight: 500;
+      text-transform: lowercase;
+    }
+
+    .contact-close {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .contact-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .contact-content {
+      padding: 40px;
+      background: #faf9f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .contact-title {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: #333;
+      margin: 0 0 20px;
+      text-transform: lowercase;
+    }
+
+    .contact-description {
+      font-size: 1rem;
+      color: #333;
+      line-height: 1.6;
+      margin: 0 0 40px;
+      max-width: 500px;
+    }
+
+    .contact-illustration {
+      width: 100%;
+      max-width: 300px;
+      margin: 20px 0 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .contact-image {
+      width: 100%;
+      height: auto;
+      max-width: 300px;
+      object-fit: contain;
+    }
+
+    .contact-email-section {
+      margin-top: 20px;
+    }
+
+    .contact-email-label {
+      font-size: 0.95rem;
+      color: #333;
+      margin: 0 0 8px;
+    }
+
+    .contact-email-link {
+      font-size: 1.1rem;
+      color: var(--accent);
+      text-decoration: underline;
+      transition: opacity 0.2s;
+    }
+
+    .contact-email-link:hover {
+      opacity: 0.8;
+    }
+
+    /* Work section styles */
+    .work-content {
+      padding: 40px;
+    }
+
+    .work-projects {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .work-card {
+      display: flex;
+      gap: 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      background: #fff;
+      width: 100%;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .work-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .work-card-image {
+      flex-shrink: 0;
+      width: 200px;
+      height: 150px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f0f0f0;
+    }
+
+    .work-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .work-card-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .work-card-title {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .work-card-tagline {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .work-card-description {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+      .about-content {
+        padding: 24px;
+      }
+
+      .about-profile-section {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .about-name {
+        font-size: 2rem;
+      }
+
+      #win-links {
+        width: min(95vw, 600px);
+        height: min(80vh, 700px);
+      }
+
+      .links-content {
+        padding: 30px 24px;
+      }
+
+      .links-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+        max-width: 100%;
+      }
+
+      .links-icon-wrapper {
+        width: 80px;
+        height: 80px;
+      }
+
+      .links-icon {
+        width: 50px;
+        height: 50px;
+      }
+
+      .links-notice {
+        max-width: 100%;
+        padding: 12px 16px;
+      }
+
+      .work-content {
+        padding: 24px;
+      }
+
+      .work-projects {
+        gap: 16px;
+      }
+
+      .work-card {
+        flex-direction: column;
+        padding: 16px;
+      }
+
+      .work-card-image {
+        width: 100%;
+        height: 180px;
+      }
+
+      .contact-content {
+        padding: 24px;
+      }
+
+      .contact-title {
+        font-size: 2rem;
+      }
+
+      .contact-description {
+        font-size: 0.95rem;
+        margin-bottom: 30px;
+      }
+
+      .contact-illustration {
+        max-width: 250px;
+        margin: 15px 0 30px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Hero Card -->
+  <div class="hero-card">
+    <div class="hero-header">Hoşgeldiniz</div>
+    <div class="hero-content">
+      <h1 class="hero-title">Merhaba, <span class="accent">Ben Asuman!</span></h1>
+      <p class="hero-tagline">Bilgisayar Mühendisi | Geliştirici </p>
+      <nav class="hero-nav">
+        <a href="#" class="hero-nav-item" data-open="about">
+          <div class="hero-nav-icon">ℹ</div>
+          <span class="hero-nav-label">Hakkımda</span>
+        </a>
+        <a href="#" class="hero-nav-item" data-open="links">
+          <div class="hero-nav-icon">🔗</div>
+          <span class="hero-nav-label">Bağlantılar</span>
+        </a>
+        <a href="#" class="hero-nav-item" data-open="work">
+          <div class="hero-nav-icon">📁</div>
+          <span class="hero-nav-label">Projelerim</span>
+        </a>
+        <a href="#" class="hero-nav-item" data-open="faq">
+          <div class="hero-nav-icon">❓</div>
+          <span class="hero-nav-label">Diğer Bilgiler</span>
+        </a>
+        <a href="#" class="hero-nav-item" data-open="contact">
+          <div class="hero-nav-icon">✉</div>
+          <span class="hero-nav-label">İletişim</span>
+        </a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- WINDOWS -->
+  <section class="window" id="win-about" data-win="about" aria-label="about">
+    <header class="titlebar about-titlebar" data-drag-handle>
+      <div class="title">Hakkımda</div>
+      <button class="about-close" data-action="close" title="Kapat">[x]</button>
+    </header>
+    <div class="content about-content">
+      <div class="about-profile-section">
+        <div class="about-profile-image-wrapper">
+          <img src="profil.jpg" alt="Profile" class="about-profile-image" id="about-profile-img">
+        </div>
+        <div class="about-profile-info">
+          <h1 class="about-name">Asuman BAŞ</h1>
+          <p class="about-titles">Bilgisayar Mühendisi</p>
+          <p class="about-previous">
+            <a href="#" class="about-link">Marmara Üniversitesi</a> mezunu
+          </p>
+        </div>
+      </div>
+      <div class="about-text-section">
+        <p class="about-intro">
+          Marmara Üniversitesi Bilgisayar Mühendisliği mezunuyum. Backend geliştirme, API entegrasyonları ve doküman otomasyonu alanlarında deneyim sahibiyim. Bunun yanında mobil programlama alanında Swift ile iOS geliştirme üzerine aktif olarak çalışmalar yapıyorum.
+        </p>
+        <p class="about-intro">Deneyimlerim:</p>
+        <ul class="about-skills">
+          <li><strong>BNP Paribas Cardif (Temmuz 2023 - Ekim 2023) ve (Temmuz 2024 - Eylül 2024)</strong></li>
+          <p>Spring Boot tabanlı backend geliştirme çalışmaları yaptım. REST API geliştirme ve entegrasyonu üzerine çalışarak istemci–sunucu arasındaki veri akışını sağladım. Proje sürecinde Java ve GitHub kullanarak ekip çalışmasına ve yazılım geliştirme süreçlerine katkı sağladım.</p>
+          <li><strong>TUBITAK (Eylül 2024 - Ocak 2025)</strong></li>
+          <p>C# ve .NET kullanılarak geliştirilen bir projede, Excel dosyalarından alınan verileri matematiksel işlemlerden geçirerek Word tabanlı sertifikalar oluşturdum. Belirlenen sertifika şablonlarına göre sonuçları tablo ve metin alanlarına yerleştirerek otomatik sertifika üretimi sağladım. Uygulama sürecinde Windows Forms yapısını kullandım ve veri akışını sağlamak amacıyla API entegrasyonları gerçekleştirdim.</p>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="window" id="win-links" data-win="links" aria-label="links">
+    <header class="titlebar links-titlebar" data-drag-handle>
+      <div class="title">Bağlantılar</div>
+      <button class="links-close" data-action="close" title="Kapat">[x]</button>
+    </header>
+    <div class="content links-content">
+      <p class="links-description">Beni bu platformlarda bulabilirsiniz.</p>
+      <div class="links-grid">
+        <a href="#" class="links-item" target="_blank">
+          <div class="links-icon-wrapper">
+            <img src="githubLogo.jpg" alt="GitHub" class="links-icon" id="links-github-icon">
+          </div>
+          <span class="links-label">github</span>
+        </a>
+        <a href="#" class="links-item" target="_blank">
+          <div class="links-icon-wrapper">
+            <img src="instagramLogo.jpg" alt="Instagram" class="links-icon" id="links-instagram-icon">
+          </div>
+          <span class="links-label">instagram</span>
+        </a>
+        <a href="#" class="links-item" target="_blank">
+          <div class="links-icon-wrapper">
+            <img src="linkedinLogo.jpg" alt="LinkedIn" class="links-icon" id="links-linkedin-icon">
+          </div>
+          <span class="links-label">linkedin</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="window" id="win-work" data-win="work" aria-label="work">
+    <header class="titlebar" data-drag-handle>
+      <div class="title"><span class="dot"></span><span>Projelerim</span></div>
+      <div class="controls">
+        <button class="ctrl" data-action="min" title="Küçült">—</button>
+        <button class="ctrl" data-action="max" title="Büyüt">▢</button>
+        <button class="ctrl" data-action="close" title="Kapat">✕</button>
+      </div>
+    </header>
+    <div class="content work-content">
+      <div class="work-projects">
+        <a href="project-crowd-predictor.html" class="work-card">
+          <div class="work-card-image">
+            <img src="CPicon.jpeg" alt="Crowd Predictor" class="work-thumbnail" id="work-crowd-predictor-img">
+          </div>
+          <div class="work-card-content">
+            <h3 class="work-card-title">Crowd Predictor</h3>
+            <p class="work-card-tagline">Yapay zekâ destekli trafik yoğunluğu tahmin sistemi</p>
+            <p class="work-card-description">Crowd Predictor, kullanıcıların belirli bir tarih ve saat için trafik yoğunluğu tahmini almasını sağlayan yapay zekâ destekli web tabanlı bir sistemdir. Projede, İstanbul'a ait trafik verileri kullanılarak makine öğrenmesi modeli geliştirilmiş; React.js tabanlı arayüz, Flask API ve Google Maps entegrasyonu ile tahminler harita üzerinde görselleştirilmiştir.</p>
+          </div>
+        </a>
+        <a href="project-2.html" class="work-card">
+          <div class="work-card-image">
+            <img src="" alt="Proje 2" class="work-thumbnail" id="work-project-2-img">
+          </div>
+          <div class="work-card-content">
+            <h3 class="work-card-title">Proje 2</h3>
+            <p class="work-card-tagline">Kısa açıklama</p>
+            <p class="work-card-description">Açıklama</p>
+          </div>
+        </a>
+        <a href="project-3.html" class="work-card">
+          <div class="work-card-image">
+            <img src="" alt="Proje 3" class="work-thumbnail" id="work-project-3-img">
+          </div>
+          <div class="work-card-content">
+            <h3 class="work-card-title">Proje 3</h3>
+            <p class="work-card-tagline">Kısa açıklama</p>
+            <p class="work-card-description">Açıklama</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="window" id="win-faq" data-win="faq" aria-label="faq">
+    <header class="titlebar" data-drag-handle>
+      <div class="title"><span class="dot"></span><span>Diğer Bilgiler</span></div>
+      <div class="controls">
+        <button class="ctrl" data-action="min" title="Küçült">—</button>
+        <button class="ctrl" data-action="max" title="Büyüt">▢</button>
+        <button class="ctrl" data-action="close" title="Kapat">✕</button>
+      </div>
+    </header>
+    <div class="content">
+      <div class="pill">is disinda kimim</div>
+      <h2>asu</h2>
+      <div class="grid">
+        <div class="card">
+          <strong>1</strong><br/>
+          aciklama buraya gelecek.
+        </div>
+        <div class="card">
+          <strong>2</strong><br/>
+          aciklama buraya gelecek.
+        </div>
+        <div class="card">
+          <strong>3</strong><br/>
+          aciklama buraya gelecek.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="window" id="win-contact" data-win="contact" aria-label="contact">
+    <header class="titlebar contact-titlebar" data-drag-handle>
+      <div class="title">contact</div>
+      <button class="contact-close" data-action="close" title="Kapat">[x]</button>
+    </header>
+    <div class="content contact-content">
+      <p class="contact-description">
+        Benimle iletişim kurmak için aşağıda yer alan e-posta adresini kullanabilirsiniz.
+      </p>
+      <div class="contact-email-section">
+        <a class="contact-email-link">asumanbash@gmail.com</a>
+      </div>
+    </div>
+  </section>
+
+
+<script>
+(() => {
+  const wins = new Map(); // name -> element
+  document.querySelectorAll(".window").forEach(w => wins.set(w.dataset.win, w));
+
+  let zTop = 50;
+  let activeWin = null;
+
+  function bringToFront(win){
+    if(!win) return;
+    win.style.zIndex = (++zTop).toString();
+    activeWin = win;
+  }
+
+  function ensureOnScreen(win){
+    // keep window inside viewport (roughly)
+    const rect = win.getBoundingClientRect();
+    const pad = 8;
+    const maxX = window.innerWidth - pad;
+    const maxY = window.innerHeight - pad - parseInt(getComputedStyle(document.documentElement).getPropertyValue('--taskbar-h'),10);
+
+    let left = rect.left;
+    let top  = rect.top;
+
+    if(rect.right < pad) left = pad;
+    if(rect.left > maxX - 80) left = maxX - 80;
+    if(rect.bottom < pad) top = pad;
+    if(rect.top > maxY - 60) top = maxY - 60;
+
+    // apply if moved
+    win.style.left = Math.max(pad, Math.min(left, maxX - 120)) + "px";
+    win.style.top  = Math.max(pad, Math.min(top,  maxY - 80)) + "px";
+  }
+
+  function openWin(name){
+    const win = wins.get(name);
+    if(!win) return;
+
+    win.dataset.open = "true";
+    win.dataset.min = "false";
+    // center the window
+    if(!win.style.left) win.style.left = (window.innerWidth/2 - 380) + "px";
+    if(!win.style.top)  win.style.top  = (window.innerHeight/2 - 240) + "px";
+
+    bringToFront(win);
+    ensureOnScreen(win);
+  }
+
+  function closeWin(name){
+    const win = wins.get(name);
+    if(!win) return;
+
+    delete win.dataset.open;
+    delete win.dataset.min;
+    delete win.dataset.max;
+
+    // choose a new active window (topmost open)
+    const openWindows = [...wins.values()].filter(w => w.dataset.open === "true" && w.dataset.min !== "true");
+    openWindows.sort((a,b) => (+a.style.zIndex) - (+b.style.zIndex));
+    activeWin = openWindows.at(-1) || null;
+  }
+
+  function minimizeWin(name){
+    const win = wins.get(name);
+    if(!win) return;
+    win.dataset.min = "true";
+    // set active to next topmost
+    const openWindows = [...wins.values()].filter(w => w.dataset.open === "true" && w.dataset.min !== "true");
+    openWindows.sort((a,b) => (+a.style.zIndex) - (+b.style.zIndex));
+    activeWin = openWindows.at(-1) || null;
+  }
+
+  function toggleMax(name){
+    const win = wins.get(name);
+    if(!win) return;
+    const isMax = win.dataset.max === "true";
+    win.dataset.max = isMax ? "false" : "true";
+    bringToFront(win);
+  }
+
+  // Launcher buttons
+  document.querySelectorAll("[data-open]").forEach(b => {
+    b.addEventListener("click", () => openWin(b.dataset.open));
+  });
+
+  // Window controls + focus
+  document.addEventListener("mousedown", (e) => {
+    const win = e.target.closest(".window");
+    if(win && win.dataset.open === "true"){
+      bringToFront(win);
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if(!btn) return;
+    const win = e.target.closest(".window");
+    if(!win) return;
+    const name = win.dataset.win;
+
+    const action = btn.dataset.action;
+    if(action === "close") closeWin(name);
+    if(action === "min") minimizeWin(name);
+    if(action === "max") toggleMax(name);
+  });
+
+  // ESC closes topmost (active) window
+  document.addEventListener("keydown", (e) => {
+    if(e.key !== "Escape") return;
+    if(!activeWin) return;
+    closeWin(activeWin.dataset.win);
+  });
+
+  // Dragging
+  let drag = null;
+  document.addEventListener("pointerdown", (e) => {
+    const handle = e.target.closest("[data-drag-handle]");
+    const win = e.target.closest(".window");
+    if(!handle || !win) return;
+    if(win.dataset.max === "true") return; // don't drag when maximized
+
+    bringToFront(win);
+    win.classList.add("dragging");
+
+    const rect = win.getBoundingClientRect();
+    drag = {
+      win,
+      startX: e.clientX,
+      startY: e.clientY,
+      origLeft: rect.left,
+      origTop: rect.top
+    };
+    win.setPointerCapture?.(e.pointerId);
+  });
+
+  document.addEventListener("pointermove", (e) => {
+    if(!drag) return;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    drag.win.style.left = (drag.origLeft + dx) + "px";
+    drag.win.style.top  = (drag.origTop + dy) + "px";
+  });
+
+  function endDrag(){
+    if(!drag) return;
+    drag.win.classList.remove("dragging");
+    ensureOnScreen(drag.win);
+    drag = null;
+  }
+  document.addEventListener("pointerup", endDrag);
+  document.addEventListener("pointercancel", endDrag);
+
+  // Keep windows inside on resize
+  window.addEventListener("resize", () => {
+    [...wins.values()].forEach(w => {
+      if(w.dataset.open === "true" && w.dataset.min !== "true") ensureOnScreen(w);
+    });
+  });
+})();
+</script>
+<script src="app.js"></script>
+</body>
+</html>      </div>

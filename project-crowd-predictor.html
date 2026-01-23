@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Crowd Predictor - Proje Detayları</title>
+  <style>
+    :root{
+      --bg: #e0f2f7;
+      --panel: rgba(255,255,255,.9);
+      --win: #fff;
+      --bar: #444444;
+      --shadow: 0 20px 60px rgba(0,0,0,.15);
+      --radius: 12px;
+      --border: rgba(0,0,0,.10);
+      --accent: #f7931e;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      overflow:auto;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .project-header {
+      background: var(--bar);
+      color: #fff;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .project-header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .back-button {
+      background: rgba(255,255,255,.12);
+      border: none;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    .back-button:hover {
+      background: rgba(255,255,255,.22);
+    }
+
+    .project-content {
+      padding: 40px;
+    }
+
+    .project-image {
+      width: 100%;
+      max-width: 1000px;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+
+    .project-tagline {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .project-description {
+      font-size: 1rem;
+      color: #333;
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+
+    .project-details {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 30px;
+    }
+
+    .project-details h2 {
+      margin: 0 0 15px;
+      font-size: 1.3rem;
+      color: var(--accent);
+    }
+
+    .project-details ul {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.8;
+    }
+
+    .project-details li {
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .project-header {
+        padding: 16px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .project-content {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="project-header">
+      <h1>Crowd Predictor</h1>
+      <a href="/#" class="back-button">← Geri Dön</a>
+    </div>
+    <div class="project-content">
+      <img src="CPpage.png" alt="Crowd Predictor" class="project-image" id="project-detail-img">
+      <p class="project-tagline">Yapay zekâ destekli trafik yoğunluğu tahmin sistemi</p>
+      <div class="project-description">
+        <p>Crowd Predictor, kullanıcıların belirli bir tarih ve saat için trafik yoğunluğu tahmini almasını sağlayan yapay zekâ destekli web tabanlı bir sistemdir.</p>
+        <p>Projede, İstanbul'a ait trafik verileri kullanılarak makine öğrenmesi modeli geliştirilmiş; React.js tabanlı arayüz, Flask API ve Google Maps entegrasyonu ile tahminler harita üzerinde görselleştirilmiştir. Amaç, kullanıcıların ileri tarihli ulaşım planlamasını kolaylaştırmaktır.</p>
+      </div>
+      <div class="project-details">
+        <h2>Proje Detayları</h2>
+        <ul>
+          <li><strong>Teknolojiler:</strong> React.js, Flask, Python, Machine Learning, Google Maps API</li>
+          <li><strong>Rol:</strong> Full-stack Developer</li>
+          <li><strong>Tarih:</strong> 2024</li>
+          <li><strong>Durum:</strong> Tamamlandı</li>
+          <li><strong>Link:</strong> <a href="https://cp-railway-frontend.onrender.com" target="_blank">Crowd Predictor</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
