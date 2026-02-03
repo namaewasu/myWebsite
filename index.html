@@ -306,6 +306,27 @@
       margin: 0;
     }
 
+    .about-cv {
+      margin: 12px 0 0;
+      font-size: 0.95rem;
+      background: #f0f0f0;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      width: fit-content;
+    }
+
+    .about-cv a {
+      color: #333;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .about-cv a:hover {
+      color: #111;
+    }
+
     .about-link {
       color: var(--accent);
       text-decoration: underline;
@@ -490,9 +511,18 @@
       padding: 40px;
       background: #faf9f6;
       display: flex;
+      flex-direction: row;
+      gap: 40px;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .contact-left {
+      display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
+      align-items: flex-start;
+      text-align: left;
+      flex-shrink: 0;
     }
 
     .contact-title {
@@ -507,8 +537,9 @@
       font-size: 1rem;
       color: #333;
       line-height: 1.6;
-      margin: 0 0 40px;
-      max-width: 500px;
+      margin: 0;
+      max-width: 280px;
+      text-align: left;
     }
 
     .contact-illustration {
@@ -546,6 +577,88 @@
 
     .contact-email-link:hover {
       opacity: 0.8;
+    }
+
+    .contact-visual {
+      width: 100%;
+      max-width: 280px;
+      margin-bottom: 20px;
+    }
+
+    .contact-visual .contact-image {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+
+    .contact-form {
+      flex: 1;
+      min-width: 0;
+      max-width: 420px;
+      text-align: left;
+    }
+
+    .contact-form-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .contact-form-row .contact-form-group {
+      flex: 1;
+    }
+
+    .contact-form-group {
+      margin-bottom: 16px;
+    }
+
+    .contact-form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .contact-form-input,
+    .contact-form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .contact-form-input:focus,
+    .contact-form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(247, 147, 30, 0.2);
+    }
+
+    .contact-form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .contact-form-submit {
+      width: 100%;
+      padding: 12px 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .contact-form-submit:hover {
+      background: #e08415;
+      transform: translateY(-1px);
     }
 
     /* Work section styles */
@@ -685,27 +798,45 @@
       }
 
       .contact-content {
+        flex-direction: column;
         padding: 24px;
+        align-items: center;
+      }
+
+      .contact-left {
+        align-items: center;
+        text-align: center;
+      }
+
+      .contact-description {
+        text-align: center;
+        max-width: 100%;
+        font-size: 0.95rem;
+        margin-bottom: 24px;
       }
 
       .contact-title {
         font-size: 2rem;
       }
 
-      .contact-description {
-        font-size: 0.95rem;
-        margin-bottom: 30px;
-      }
-
       .contact-illustration {
         max-width: 250px;
         margin: 15px 0 30px;
+      }
+
+      .contact-form-row {
+        flex-direction: column;
+      }
+
+      .contact-form {
+        max-width: 100%;
       }
     }
   </style>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <audio id="click-sound" src="clickSound.mp3" preload="auto"></audio>
 
   <!-- Hero Card -->
   <div class="hero-card">
@@ -726,12 +857,8 @@
           <div class="hero-nav-icon">📁</div>
           <span class="hero-nav-label">Projelerim</span>
         </a>
-        <a href="#" class="hero-nav-item" data-open="faq">
-          <div class="hero-nav-icon">❓</div>
-          <span class="hero-nav-label">Diğer Bilgiler</span>
-        </a>
         <a href="#" class="hero-nav-item" data-open="contact">
-          <div class="hero-nav-icon">✉</div>
+          <div class="hero-nav-icon">📨</div>
           <span class="hero-nav-label">İletişim</span>
         </a>
       </nav>
@@ -740,9 +867,13 @@
 
   <!-- WINDOWS -->
   <section class="window" id="win-about" data-win="about" aria-label="about">
-    <header class="titlebar about-titlebar" data-drag-handle>
-      <div class="title">Hakkımda</div>
-      <button class="about-close" data-action="close" title="Kapat">[x]</button>
+    <header class="titlebar" data-drag-handle>
+      <div class="title"><span class="dot"></span><span>Hakkımda</span></div>
+      <div class="controls">
+        <button class="ctrl" data-action="min" title="Küçült">—</button>
+        <button class="ctrl" data-action="max" title="Büyüt">▢</button>
+        <button class="ctrl" data-action="close" title="Kapat">✕</button>
+      </div>
     </header>
     <div class="content about-content">
       <div class="about-profile-section">
@@ -753,7 +884,10 @@
           <h1 class="about-name">Asuman BAŞ</h1>
           <p class="about-titles">Bilgisayar Mühendisi</p>
           <p class="about-previous">
-            <a href="#" class="about-link">Marmara Üniversitesi</a> mezunu
+            <a href="https://www.marmara.edu.tr" target="_blank" rel="noopener noreferrer" class="about-link">Marmara Üniversitesi</a> mezunu
+          </p>
+          <p class="about-cv">
+            <a href="cv.pdf" target="_blank" rel="noopener noreferrer" download>Özgeçmişimi indir (PDF)</a>
           </p>
         </div>
       </div>
@@ -773,26 +907,30 @@
   </section>
 
   <section class="window" id="win-links" data-win="links" aria-label="links">
-    <header class="titlebar links-titlebar" data-drag-handle>
-      <div class="title">Bağlantılar</div>
-      <button class="links-close" data-action="close" title="Kapat">[x]</button>
+    <header class="titlebar" data-drag-handle>
+      <div class="title"><span class="dot"></span><span>Bağlantılar</span></div>
+      <div class="controls">
+        <button class="ctrl" data-action="min" title="Küçült">—</button>
+        <button class="ctrl" data-action="max" title="Büyüt">▢</button>
+        <button class="ctrl" data-action="close" title="Kapat">✕</button>
+      </div>
     </header>
     <div class="content links-content">
       <p class="links-description">Beni bu platformlarda bulabilirsiniz.</p>
       <div class="links-grid">
-        <a href="#" class="links-item" target="_blank">
+        <a href="https://github.com/namaewasu" class="links-item" target="_blank" rel="noopener noreferrer">
           <div class="links-icon-wrapper">
             <img src="githubLogo.jpg" alt="GitHub" class="links-icon" id="links-github-icon">
           </div>
           <span class="links-label">github</span>
         </a>
-        <a href="#" class="links-item" target="_blank">
+        <a href="https://www.instagram.com/namaewasu/" class="links-item" target="_blank" rel="noopener noreferrer">
           <div class="links-icon-wrapper">
             <img src="instagramLogo.jpg" alt="Instagram" class="links-icon" id="links-instagram-icon">
           </div>
           <span class="links-label">instagram</span>
         </a>
-        <a href="#" class="links-item" target="_blank">
+        <a href="https://www.linkedin.com/in/asuman-bas/" class="links-item" target="_blank" rel="noopener noreferrer">
           <div class="links-icon-wrapper">
             <img src="linkedinLogo.jpg" alt="LinkedIn" class="links-icon" id="links-linkedin-icon">
           </div>
@@ -825,69 +963,67 @@
         </a>
         <a href="project-2.html" class="work-card">
           <div class="work-card-image">
-            <img src="" alt="Proje 2" class="work-thumbnail" id="work-project-2-img">
+            <img src="chatbotKucuk.png" alt="Akıllı Trafik Asistanı Chatbot" class="work-thumbnail" id="work-project-2-img">
           </div>
           <div class="work-card-content">
-            <h3 class="work-card-title">Proje 2</h3>
-            <p class="work-card-tagline">Kısa açıklama</p>
-            <p class="work-card-description">Açıklama</p>
+            <h3 class="work-card-title">Akıllı Trafik Asistanı Chatbot</h3>
+            <p class="work-card-tagline">İstanbul trafik durumu ve yol tarifleri hakkında bilgi veren AI destekli chatbot</p>
+            <p class="work-card-description">GPT ve Gemini modellerini karşılaştırarak en iyi performansı belirlemeyi amaçlayan proje. Streamlit web arayüzü ile trafik tahmini, rota önerisi, seyahat süresi gibi 15 intent kategorisini destekler. Python, TF-IDF ve Naive Bayes ile intent sınıflandırması yapılır.</p>
           </div>
         </a>
         <a href="project-3.html" class="work-card">
           <div class="work-card-image">
-            <img src="" alt="Proje 3" class="work-thumbnail" id="work-project-3-img">
+            <img src="webEkran.png" alt="Kişisel Web Sitesi" class="work-thumbnail" id="work-project-3-img">
           </div>
           <div class="work-card-content">
-            <h3 class="work-card-title">Proje 3</h3>
-            <p class="work-card-tagline">Kısa açıklama</p>
-            <p class="work-card-description">Açıklama</p>
+            <h3 class="work-card-title">Kişisel Web Sitem</h3>
+            <p class="work-card-tagline">Desktop tarzı arayüze sahip kişisel portfolyo web sitesi</p>
+            <p class="work-card-description">Windows masaüstü pencerelerini andıran, sürüklenebilir ve etkileşimli bir kişisel web sitesi. Hakkımda, projelerim, bağlantılar ve iletişim formu içeren modüler pencere yapısı. Vanilla HTML, CSS ve JavaScript ile geliştirildi.</p>
           </div>
         </a>
       </div>
     </div>
   </section>
 
-  <section class="window" id="win-faq" data-win="faq" aria-label="faq">
+  <section class="window" id="win-contact" data-win="contact" aria-label="contact">
     <header class="titlebar" data-drag-handle>
-      <div class="title"><span class="dot"></span><span>Diğer Bilgiler</span></div>
+      <div class="title"><span class="dot"></span><span>İletişim</span></div>
       <div class="controls">
         <button class="ctrl" data-action="min" title="Küçült">—</button>
         <button class="ctrl" data-action="max" title="Büyüt">▢</button>
         <button class="ctrl" data-action="close" title="Kapat">✕</button>
       </div>
     </header>
-    <div class="content">
-      <div class="pill">is disinda kimim</div>
-      <h2>asu</h2>
-      <div class="grid">
-        <div class="card">
-          <strong>1</strong><br/>
-          aciklama buraya gelecek.
-        </div>
-        <div class="card">
-          <strong>2</strong><br/>
-          aciklama buraya gelecek.
-        </div>
-        <div class="card">
-          <strong>3</strong><br/>
-          aciklama buraya gelecek.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="window" id="win-contact" data-win="contact" aria-label="contact">
-    <header class="titlebar contact-titlebar" data-drag-handle>
-      <div class="title">contact</div>
-      <button class="contact-close" data-action="close" title="Kapat">[x]</button>
-    </header>
     <div class="content contact-content">
-      <p class="contact-description">
-        Benimle iletişim kurmak için aşağıda yer alan e-posta adresini kullanabilirsiniz.
-      </p>
-      <div class="contact-email-section">
-        <a class="contact-email-link">asumanbash@gmail.com</a>
+      <div class="contact-left">
+        <div class="contact-visual">
+          <img src="mail.jpg" alt="İletişim" class="contact-image">
+        </div>
+        <p class="contact-description">
+          Benimle iletişim kurmak için formu doldurup gönderin.
+        </p>
       </div>
+      <form id="contact-form" class="contact-form">
+        <div class="contact-form-row">
+          <div class="contact-form-group">
+            <label for="contact-ad">Ad</label>
+            <input type="text" id="contact-ad" name="ad" class="contact-form-input" required placeholder="Adınız">
+          </div>
+          <div class="contact-form-group">
+            <label for="contact-soyad">Soyad</label>
+            <input type="text" id="contact-soyad" name="soyad" class="contact-form-input" required placeholder="Soyadınız">
+          </div>
+        </div>
+        <div class="contact-form-group">
+          <label for="contact-mail">E-posta</label>
+          <input type="email" id="contact-mail" name="mail" class="contact-form-input" required placeholder="ornek@mail.com">
+        </div>
+        <div class="contact-form-group">
+          <label for="contact-mesaj">Mesaj</label>
+          <textarea id="contact-mesaj" name="mesaj" class="contact-form-textarea" required placeholder="Mesajınızı yazın..." rows="4"></textarea>
+        </div>
+        <button type="submit" class="contact-form-submit">Gönder</button>
+      </form>
     </div>
   </section>
 
@@ -972,9 +1108,20 @@
     bringToFront(win);
   }
 
-  // Launcher buttons
+  function playClickSound(){
+    const audio = document.getElementById("click-sound");
+    if(audio){
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    }
+  }
+
+  // Launcher buttons (4 bölüm: Hakkımda, Bağlantılar, Projelerim, İletişim)
   document.querySelectorAll("[data-open]").forEach(b => {
-    b.addEventListener("click", () => openWin(b.dataset.open));
+    b.addEventListener("click", () => {
+      playClickSound();
+      openWin(b.dataset.open);
+    });
   });
 
   // Window controls + focus
@@ -993,7 +1140,10 @@
     const name = win.dataset.win;
 
     const action = btn.dataset.action;
-    if(action === "close") closeWin(name);
+    if(action === "close"){
+      playClickSound();
+      closeWin(name);
+    }
     if(action === "min") minimizeWin(name);
     if(action === "max") toggleMax(name);
   });
@@ -1002,6 +1152,7 @@
   document.addEventListener("keydown", (e) => {
     if(e.key !== "Escape") return;
     if(!activeWin) return;
+    playClickSound();
     closeWin(activeWin.dataset.win);
   });
 
@@ -1050,8 +1201,29 @@
       if(w.dataset.open === "true" && w.dataset.min !== "true") ensureOnScreen(w);
     });
   });
+
+  // İletişim formu: mailto ile e-posta aç
+  const contactForm = document.getElementById("contact-form");
+  if(contactForm){
+    contactForm.addEventListener("submit", function(e){
+      e.preventDefault();
+      const ad = document.getElementById("contact-ad").value.trim();
+      const soyad = document.getElementById("contact-soyad").value.trim();
+      const mail = document.getElementById("contact-mail").value.trim();
+      const mesaj = document.getElementById("contact-mesaj").value.trim();
+      const subject = encodeURIComponent("İletişim Formu - " + ad + " " + soyad);
+      const body = encodeURIComponent(
+        "Ad: " + ad + "\n" +
+        "Soyad: " + soyad + "\n" +
+        "E-posta: " + mail + "\n\n" +
+        "Mesaj:\n" + mesaj
+      );
+      const mailtoLink = "mailto:asumanbash@gmail.com?subject=" + subject + "&body=" + body;
+      window.location.href = mailtoLink;
+    });
+  }
 })();
 </script>
 <script src="app.js"></script>
 </body>
-</html>      </div>
+</html>
